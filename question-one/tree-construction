@@ -1,0 +1,222 @@
+"/usr/bin/phyml" -d nt -m GTR -b 100 -v 0.0 -c 4 -a e -f e -s BEST --no_memory_check -i "/tmp/seaview.QMGUCc.phy"
+DRM_IOCTL_I915_GEM_APERTURE failed: Invalid argument
+Assuming 131072kB available aperture size.
+May lead to reduced performance or incorrect rendering.
+get chip id failed: -1 [22]
+param: 4, val: 0
+DRM_IOCTL_I915_GEM_APERTURE failed: Invalid argument
+Assuming 131072kB available aperture size.
+May lead to reduced performance or incorrect rendering.
+get chip id failed: -1 [22]
+param: 4, val: 0
+beignet-opencl-icd: no supported GPU found, this is probably the wrong opencl-icd package for this hardware
+(If you have multiple ICDs installed and OpenCL works, you can ignore this message)
+DRM_IOCTL_I915_GEM_APERTURE failed: Invalid argument
+Assuming 131072kB available aperture size.
+May lead to reduced performance or incorrect rendering.
+get chip id failed: -1 [22]
+param: 4, val: 0
+DRM_IOCTL_I915_GEM_APERTURE failed: Invalid argument
+Assuming 131072kB available aperture size.
+May lead to reduced performance or incorrect rendering.
+get chip id failed: -1 [22]
+param: 4, val: 0
+beignet-opencl-icd: no supported GPU found, this is probably the wrong opencl-icd package for this hardware
+(If you have multiple ICDs installed and OpenCL works, you can ignore this message)
+DRM_IOCTL_I915_GEM_APERTURE failed: Invalid argument
+Assuming 131072kB available aperture size.
+May lead to reduced performance or incorrect rendering.
+get chip id failed: -1 [22]
+param: 4, val: 0
+beignet-opencl-icd: no supported GPU found, this is probably the wrong opencl-icd package for this hardware
+(If you have multiple ICDs installed and OpenCL works, you can ignore this message)
+
+. Command line: /usr/lib/phyml/bin/phyml-mpi -d nt -m GTR -b 100 -v 0.0 -c 4 -a e -f e -s BEST --no_memory_check -i /tmp/seaview.QMGUCc.phy 
+
+
+
+
+
+			⁜	 SETTINGS 	⁜  
+
+
+        ‣ Sequence filename:				 seaview.QMGUCc.phy
+        ‣ Data type:					 dna
+        ‣ Alphabet size:				 4
+        ‣ Sequence format:				 interleaved
+        ‣ Number of data sets:				 1
+        ‣ Nb of bootstrapped data sets:			 100
+        ‣ Compute approximate likelihood ratio test:	 no
+        ‣ Model name:					 GTR
+        ‣ Proportion of invariable sites:		 0.000000
+        ‣ Number of subst. rate catgs:			 4
+        ‣ Gamma distribution parameter:			 estimated
+        ‣ 'Middle' of each rate class:			 mean
+        ‣ Nucleotide equilibrium frequencies:		 empirical
+        ‣ Optimise tree topology:			 yes
+        ‣ Tree topology search:				 Best of NNIs and SPRs
+        ‣ Starting tree:				 BioNJ
+        ‣ Add random input tree:			 no
+        ‣ Optimise branch lengths:			 yes
+        ‣ Optimise substitution model parameters:	 yes
+        ‣ Run ID:					 none
+        ‣ Random seed:					 1601577725
+        ‣ Subtree patterns aliasing:			 no
+        ‣ Version:					 3.3.3:3.3.20170530+dfsg-2
+        ‣ Byte alignment:				 1
+        ‣ AVX enabled:					 no
+        ‣ SSE enabled:					 no
+
+                           ⁜ ⁜ ⁜ ⁜ ⁜ ⁜ ⁜ ⁜ ⁜ ⁜ ⁜ ⁜  
+
+
+
+• 738 patterns found (out of a total of 994 sites). 
+
+• 274 sites without polymorphism (27.57%).
+
+• Computing pairwise distances...
+
+• Building BioNJ tree...
+
+• This analysis requires at least 57 MB of memory space.
+
+
+• Score of initial tree:    -36202.63
+
+• Building a list of starting trees (NNI search)...
+
+	 ╭─────────────────────────╮ 
+	 │   0         -35950.44   │ •
+	 ├─────────────────────────┤
+	 │   1         -35925.43   │ •
+	 ├─────────────────────────┤
+	 │   2         -35956.71   │
+	 ├─────────────────────────┤
+	 │   3         -35944.71   │
+	 ├─────────────────────────┤
+	 │   4         -35932.36   │
+	 ├─────────────────────────┤
+	 │   5         -35941.20   │
+	 ├─────────────────────────┤
+	 │   6         -35928.59   │
+	 ├─────────────────────────┤
+	 │   7         -36007.17   │
+	 ├─────────────────────────┤
+	 │   8         -35951.69   │
+	 ├─────────────────────────┤
+	 │   9         -35936.07   │
+	 ├─────────────────────────┤
+	 │  10         -35972.78   │
+	 ├─────────────────────────┤
+	 │  11         -35960.24   │
+	 ├─────────────────────────┤
+	 │  12         -35928.52   │
+	 ├─────────────────────────┤
+	 │  13         -36007.90   │
+	 ├─────────────────────────┤
+	 │  14         -35954.33   │
+	 ╰─────────────────────────╯ 
+
+• Fast optimisation of the best trees (SPR search)...
+
+	 ╭─────────────────────────╮ 
+	 │   1         -35910.36   │ •
+	 ╰─────────────────────────╯ 
+
+• Thorough optimisation of the best trees (SPR search)...
+
+	 ╭─────────────────────────╮ 
+	 │   1         -35909.06   │ •
+	 ├─────────────────────────┤
+	 │   2         -35909.06   │ •
+	 ╰─────────────────────────╯ 
+
+• Final optimisation steps...
+
+
+• Score of initial tree:    -36202.63
+
+• Building a list of starting trees (NNI search)...
+
+	 ╭─────────────────────────╮ 
+	 │   0         -35946.92   │ •
+	 ├─────────────────────────┤
+	 │   1         -35998.78   │
+	 ├─────────────────────────┤
+	 │   2         -35935.39   │ •
+	 ├─────────────────────────┤
+	 │   3         -35932.84   │ •
+	 ├─────────────────────────┤
+	 │   4         -35975.68   │
+	 ├─────────────────────────┤
+	 │   5         -35955.49   │
+	 ├─────────────────────────┤
+	 │   6         -35979.89   │
+	 ├─────────────────────────┤
+	 │   7         -35936.28   │
+	 ├─────────────────────────┤
+	 │   8         -35974.99   │
+	 ├─────────────────────────┤
+	 │   9         -35985.64   │
+	 ├─────────────────────────┤
+	 │  10         -35953.64   │
+	 ├─────────────────────────┤
+	 │  11         -36002.99   │
+	 ├─────────────────────────┤
+	 │  12         -35955.86   │
+	 ├─────────────────────────┤
+	 │  13         -35943.15   │
+	 ├─────────────────────────┤
+	 │  14         -35969.66   │
+	 ╰─────────────────────────╯ 
+
+• Fast optimisation of the best trees (SPR search)...
+
+	 ╭─────────────────────────╮ 
+	 │   1         -35902.29   │ •
+	 ╰─────────────────────────╯ 
+
+• Thorough optimisation of the best trees (SPR search)...
+
+	 ╭─────────────────────────╮ 
+	 │   1         -35900.85   │ •
+	 ├─────────────────────────┤
+	 │   2         -35900.85   │ •
+	 ╰─────────────────────────╯ 
+
+• Final optimisation steps...
+
+
+• Log likelihood obtained after NNI moves : -35908.450719
+• Log likelihood obtained after SPR moves : -35900.716625
+
+• Log likelihood of the current tree: -35900.716625.
+
+• Launch bootstrap analysis on the most likely tree...
+
+• The bootstrap analysis will use 8 CPUs.
+. Non parametric bootstrap analysis 
+
+. The number of replicates is not a multiple of 8 CPUs.
+
+. Will run 104 replicates.
+
+  [••••••••••••••••••••]   20/ 104
+  [••••••••••••••••••••]   40/ 104
+  [••••••••••••••••••••]   60/ 104
+  [••••••••••••••••••••]   80/ 104
+  [••••••••••••••••••••]  100/ 104
+  [••••]  104/ 104
+ 
+
+. Exiting bootstrap function normally.
+
+• Completed the bootstrap analysis succesfully.
+
+• Printing the most likely tree in file 'seaview.QMGUCc.phy_phyml_tree.txt'.
+
+• Time used 1h35m33s
+
+oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
