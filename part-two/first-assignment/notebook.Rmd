@@ -1,0 +1,135 @@
+---
+title: "Population Genetics - Assignment One"
+output: html_notebook
+---
+
+Task 1: Interpretation of the genetic pattern of threespine stickleback
+  - Analyse the genetic diversity of all stickleback populations, separately and hierarchically, and interpret the data. A question you might ask is: why are they so different? 
+  - Analyse the genetic divergence between and among the coastal and inland samples, and interpret the data. A question you might ask is: why are they so different?
+
+Loading packages.  
+```{r}
+library(adegenet)
+library(hierfstat)
+library(genetics)
+library(pegas)
+```
+
+Reading in the data.
+```{r}
+data <- read.genepop('/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/data/stickle.gen')
+```
+
+# Calculating Genetic Variation
+Adegenet contains a number of functions to analyse genetic variation. 
+
+Estimate expected heterozygosity.
+```{r}
+exp_het <- Hs(data)
+```
+
+Obtain the number of alleles per population.
+```{r}
+sum <- summary(data)
+nall <- sum$pop.n.all
+```
+
+Visualize the results
+```{r}
+pdf(file = "/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/het.pdf")
+barplot(exp_het, xlab = 'Population', ylab = 'Heterozygosity')
+dev.off()
+
+pdf(file = "/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/nall.pdf")
+barplot(nall, xlab = 'Population', ylab = 'Number of alleles')
+dev.off()
+```
+What do you notice?
+- Populations 5, 6 and 7 have less heterozygosity that populations 1 to 4.
+- Populations 5, 6 and 7 also have fewer alleles than populations 1 to 4.
+
+How do you interpret these histograms? 
+My interpretation is that due to the reduced number of alleles in populations 5, 6 and 7, there is naturally going to be less heterozygosity in these populations, simply due to the fact that there are more heterozygous combinations of alleles relative to homozygous combinations.
+
+Heterozygosity ratio test.
+```{r}
+calc.ratio <- function(n) {
+   ratio.vector = c()
+   for (i in 5:n) {
+   ratio = (choose(i, 2) - i)/i
+   print(i)
+   ratio.vector[i-4] <- ratio
+   }
+   return(ratio.vector)
+}
+
+calc.ratio
+ratio.vector = calc.ratio(50)
+plot(ratio.vector, type='ol')
+```
+
+
+
+Read in stickle.dat file.
+```{r}
+data1 <- read.fstat('/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/data/stickle.dat')
+```
+
+Estimate the allelic richness. Allelic richness (number of alleles) is a measure of genetic diversity indicative of a population's long-term potential for adaptability and persistence. Discuss rarefaction.
+```{r}
+AR <- allelic.richness(data1)
+AR
+```
+
+Estimate the mean allelic richness over all loci per population
+```{r}
+meanAR <- colMeans(AR$Ar)
+meanAR
+
+barplot(meanAR, xlab = 'Population' , ylab = 'Mean allelic richness')
+```
+
+# Calculating Genetic Structure
+First, let’s assess the pairwise genetic differentiation as estimated with FST. Talk a bit about fixation index. Interpret the results below.
+```{r}
+pp <- pairwise.neifst(data1)
+pp
+```
+
+Let’s now assess the variability between populations using a Discriminant Analysis of Principal Components (DAPC). DAPC is a method that describes the diversity between pre-defined groups; it optimizes the variability between groups while minimizing the variability within groups. This is fundamentally different than for instance the Principal Component Analysis (PCA), which describes the global diversity, possibly overlooking differences between groups. Define 40 PCAs and 5 discriminant functions. Interpret the results below.
+
+```{r}
+dapcstickle <- dapc(data, n.pca = 40, n.da = 5)
+dapcstickle
+# pdf(file = "/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/dapc.pdf")
+scatter(dapcstickle)
+# dev.off()
+```
+
+DAPC in itself requires prior groups to be defined. However, groups are often unknown or uncertain, so we need to identify genetic clusters. Here we will use a genetic clustering approach in R. The function find.clusters is an algorithm that performs k-means clustering during which it tries to find a given number k of groups maximizing the variation between these groups. To identify the optimal number of clusters, k-means is run sequentially with increasing values of k, and different clustering solutions are compared using Bayesian Information Criterion (BIC). Ideally, the optimal clustering solution should correspond to the lowest BIC. In practice, the ’best’ BIC is often indicated by an elbow in the curve of BIC values as a function of k.
+
+```{r}
+pdf(file = "/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/cluster.pdf")
+clust <- find.clusters(data, n.pca = 100)
+dev.off()
+```
+
+R will now ask you to choose the number of clusters. It will give you a plot like the one below, which are the BIC (Bayesian information criterion, a criterion for model selection used e.g. in phylogenomics) values (y-axis) for each k groups (x-axis). You can see that the BIC value does not decrease substantially any more around  k = 7 or k = 8. We expect k = 7 since we study 7 populations.
+
+See which clusters individuals are assigned to.
+```{r}
+as.data.frame(clust$grp)
+```
+
+We create a table that shows the number of individuals for a certain population assigned to a certain cluster.
+```{r}
+table(clust$grp, data$pop)
+```
+
+Visualising the table.
+```{r}
+pdf(file = "/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/first-assignment/table.pdf")
+table.value(table(clust$grp,data$pop))
+```
+What do you notice here and how do you interpret this?
+
