@@ -1,0 +1,218 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Read the Data
+```{r}
+library(adegenet)
+data = read.genepop('data/stickle.gen')
+```
+
+# Heterozygosity
+First let’s look at the observed and expected heterozygosity
+```{r}
+data.pop = seppop(data)
+data.het = cbind(do.call("c", lapply(data.pop, function(x) mean(summary(x)$Hobs))), do.call("c", lapply(data.pop, function(x) mean(summary(x)$Hexp))) )
+colnames(data.het) = c('Observed heterozygosity', 'Expected heterozygosity')
+data.het
+```
+
+# Calculating Genetic Diversity
+Here we will use the function Molecular Diversity Indices to calculate a set of diversity indices: number of alleles, expected and observed heterozygosity, θ (theta).
+```{r}
+library(mmod)
+diff_stats(data)
+```
+
+Let’s now calculate some measures of diversity at the global population level, rather than at the locus level. First calculate Weir and Cockerham 1984 Fst value
+```{r}
+library(hierfstat)
+genet.dist(data, diploid = T, method = 'WC84')
+```
+
+How do you interpret the values? Highest – lowest? Outlier? Map the values on the sampling map; do you notice a pattern? Values in the coastal region are comparable and above average for H and NA. 
+
+What about inbreeding (FIS) values as a measure of diversity?
+```{r}
+basic.stats(data)
+```
+
+Significance: diversity is a suitable measure of biodiversity at the genetic level. Let’s visualise the output of the FST analysis with heat maps.
+
+```{r}
+pp = genet.dist(data, diploid = T, method = 'WC84')
+
+library(corrplot)
+corrplot(as.matrix(pp), is.cor = F, type= 'lower', method = "color")
+```
+
+# Calculating Overall Hierarchical Genetic Structure
+We use AMOVA (Analysis of Molecular Variance)  to calculate overall genetic structure by groupings based on the FST values. In order to do so we have to adapt the 'data' object with the grouping settings.
+
+First we create a data frame that contains the hierarchical structure of the data:
+```{r}
+data_hier = data.frame(c(rep('coastal', 49+50+50+46), rep('inland', 50+50+50)), data@pop)
+names(data_hier) = c('group', 'pop')
+```
+
+Now we add the dataframe to the dat object to make it a stratification factor
+```{r}
+data@other = list(population_hierarchy = data_hier)
+strata(data) = data.frame(other(data)$population_hierarchy)
+```
+
+We can now check how the stratification looks like:
+```{r}
+strata(data)
+```
+
+Even though the stratification looks like a simple data frame, it will be necessary to specify the terms of the AMOVA.
+
+Note that we discard sample 7 (Meuse) for this analysis, since statistical tests are only valid if groups contain at least 2 populations. In case of one population, one may consider it anyway as a genetic unit. 
+
+Load library (poppr)
+dat2 = popsub(dat, blacklist = 'Pop-7')
+```{r}
+library(poppr)
+data2 = popsub(data, blacklist = 'Pop-7')
+```
+
+Significance: hierarchical FST values evaluate more natural groupings of samples. Before proceeding make sure not to have too many missing data: markers with 5% or more missing values would be dropped in the AMOVA.
+
+```{r}
+info_table(data2, plot = TRUE)
+```
+
+We remove the missing data:
+```{r}
+data2 = missingno(data2, type = 'genotype')
+```
+
+Let’s finally run the AMOVA:
+```{r}
+stickamova = poppr.amova(data2, ~group/pop, within = F)
+stickamova
+```
+In words: the differentiation between the two groups is considerable and amounts to 8.21%, for an FST (here called Phi-samples-group) = 0.17 while the differentiation within each group is similar (15.28 %). The variance within each individual population amounts to 76.51%
+
+Are your results significant? To test this we will run a permutation test and see where our results sit in the output:
+```{r}
+set.seed(1999)
+sticksignif = randtest(stickamova, nrepet = 999)
+
+sticksignif
+plot(sticksignif)
+```
+
+What is your outcome of the AMOVA?
+What is an AMOVA exactly? Explain with your own words.
+How do you interpret the hierarchical pattern?
+
+# Conclusion 
+Population genetic samples reveal their genetic diversity and patterns through a diversity of statistical analyses.
+
+# Looking for evidence of selection
+Coastal and inland habitats are very different. So, do sticklebacks experience selection when colonizing inland freshwater habitats? Do some loci (linked to particular genes) show signatures of selection? 
+
+How do signatures of selection in the genome of natural populations look like?
+ - Balancing selection: form of natural selection which work to maintain genetic polymorphisms (or multiple alleles) within a population.
+ - Directional selection: form of natural selection which favors a single allele within a population. When different alleles are selected in different environments, we talk about  divergent selection.
+
+Balancing selection in populations leads to a low Fst, while directional selection in populations leads to a high Fst. When looking for selection we compare the expected Fst given by drift alone against the observed Fst. We need a neutral genome-wide baseline, taking into account the neutral divergence among populations (reflecting divergence due to migration, effective population size, drift…) 
+ - Loci that have extremely high FST compared to the genome-wide “neutral” FST may be under divergent selection.
+ - Loci that have extremely low FST compared to the genome-wide “neutral” FST may be under balancing selection.
+ 
+Importantly, the distribution of FSTunder neutrality depends on heterozygosity. As a consequence, heterozygosity levels must be taken into account when comparing the magnitude of FST.
+
+# Detecting Selection in DNA microsatellites
+```{r}
+devtools::install_github('spflanagan/fsthet_analysis/fsthet', force = TRUE)
+library(fsthet)
+gpop = my.read.genepop('/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fifth-assignment/data/stick_old.pop')
+```
+
+Calculate the actual FST between the markers:
+```{r}
+fsts<-calc.actual.fst(gpop)
+```
+
+Now plot the FST on the Ht: what do you see?
+```{r}
+plot(fsts$Ht, fsts$Fst,xlab="Ht",ylab="Fst",pch=19)
+```
+
+```{r}
+quant.out1 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="betahat", min.per.bin=10))))
+quant.out2 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="theta", min.per.bin=10))))
+quant.out3 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="var", min.per.bin=10))))
+quant.out4 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="fst", min.per.bin=10))))
+```
+
+```{r}
+outliers1<-find.outliers(fsts,boot.out=quant.out1)
+
+outliers2<-find.outliers(fsts,boot.out=quant.out2)
+
+outliers3<-find.outliers(fsts,boot.out=quant.out3)
+
+outliers4<-find.outliers(fsts,boot.out=quant.out4)
+```
+
+```{r}
+plot(fsts$Ht, fsts$Fst,xlab="Ht",ylab="Fst",pch=19,col="black")
+points(outliers1$Ht, outliers1$Fst,xlab="Ht", ylab="Fst", pch=19, col="pink")
+points(outliers2$Ht, outliers2$Fst,xlab="Ht", ylab="Fst", pch=19, col="red")
+points(outliers3$Ht, outliers3$Fst,xlab="Ht", ylab="Fst", pch=19, col="blue")
+points(outliers4$Ht, outliers4$Fst,xlab="Ht", ylab="Fst", pch=19, col="green")
+
+```
+
+
+```{r}
+BiocManager::install("qvalue")
+install.packages(c('vcfR', 'plyr', 'processx'))
+library(qvalue)
+library(vcfR)
+library(plyr)
+library(processx) ### should be atleast 3.4.0
+
+devtools::install_github("whitlock/OutFLANK")
+library(OutFLANK)
+```
+
+```{r}
+source("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fifth-assignment/read-plink-bed.R")
+```
+
+```{r}
+snps = read.plink('/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fifth-assignment/data/pl1')# SNPS
+markers = read.table('/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fifth-assignment/data/pl1.bim', h = F)# Markers
+pops = read.table('/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fifth-assignment/data/pops.tsv', h = F)# populations
+```
+
+```{r}
+snps[is.na(snps)] = 9
+```
+
+```{r}
+t2 = apply(snps, 2, function(x){sum(x == 9)/length(x)})#we are calculating what percentage of the genotypes in each SNP is missing
+
+snps2 = snps[, t2 <= .1]# we are pruning the data so that we keep SNPs missing in no more than 25% of the data
+```
+
+```{r}
+ofl = MakeDiploidFSTMat(snps2, as.character(markers[t2 <= .1 ,2]), as.character(pops[, 2]))# we are making a Fst matrix
+
+outR = OutFLANK(ofl, NumberOfSamples=4, LeftTrimFraction = 0.1)
+```
+
+```{r}
+OutFLANKResultsPlotter(outR)
+OutFLANKResultsPlotter(outR, Hmin = 0.01, Zoom = T)
+```
+
+```{r}
+head(outR$results, n = 10)
+```
+
