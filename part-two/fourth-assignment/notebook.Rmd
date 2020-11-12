@@ -110,3 +110,55 @@ How do you interpret the hierarchical pattern?
 
 # Conclusion 
 Population genetic samples reveal their genetic diversity and patterns through a diversity of statistical analyses.
+
+# Detecting selection in microsatellites
+library(fsthet)
+gpop = my.read.genepop("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fourth-assignment/data/stick_old.pop")
+
+fsts<-calc.actual.fst(gpop)
+plot(fsts$Ht, fsts$Fst,xlab="Ht",ylab="Fst",pch=19)
+
+quant.out1 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="betahat", min.per.bin=10))))
+quant.out2 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="theta", min.per.bin=10))))
+quant.out3 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="var", min.per.bin=10))))
+quant.out4 = as.data.frame(t(replicate(100, fst.boot(gpop,bootstrap=FALSE, fst.choice="fst", min.per.bin=10))))
+
+outliers1<-find.outliers(fsts,boot.out=quant.out1)
+outliers2<-find.outliers(fsts,boot.out=quant.out2)
+outliers3<-find.outliers(fsts,boot.out=quant.out3)
+outliers4<-find.outliers(fsts,boot.out=quant.out4)
+
+outliers1
+outliers2
+outliers3
+outliers4
+
+plot(fsts$Ht, fsts$Fst,xlab="Ht",ylab="Fst",pch=19,col="black")
+points(outliers1$Ht,outliers1$Fst,xlab="Ht",ylab="Fst",pch=19,col="pink")
+points(outliers2$Ht,outliers2$Fst,xlab="Ht",ylab="Fst",pch=19,col="red")
+points(outliers3$Ht,outliers3$Fst,xlab="Ht",ylab="Fst",pch=19,col="blue")
+points(outliers4$Ht,outliers4$Fst,xlab="Ht",ylab="Fst",pch=19,col="green")
+
+library(qvalue)
+library(vcfR)
+library(plyr)
+library(processx)
+library(OutFLANK)
+
+source("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fourth-assignment/read-plink-bed.R")
+snps = read.plink("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fourth-assignment/data/pl1")
+markers = read.table("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fourth-assignment/data/pl1.bim", h = F)
+pops = read.table("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fourth-assignment/data/pops.tsv", h = F)
+snps[is.na(snps)] = 9
+
+t2 = apply(snps, 2, function(x){sum(x == 9)/length(x)})#we are calculating what percentage of the genotypes in each SNP is missing
+snps2 = snps[, t2 <= .10]# we are pruning the data so that we keep SNPs missing in no more than 25% of the data
+
+ofl = MakeDiploidFSTMat(snps2, as.character(markers[t2 <= .10, 2]), as.character(pops[, 2]))
+
+outR = OutFLANK(ofl, LeftTrimFraction=0.1, NumberOfSamples = 4)
+
+pdf(file = "/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fourth-assignment/10.pdf")
+OutFLANKResultsPlotter(outR)
+dev.off()
+

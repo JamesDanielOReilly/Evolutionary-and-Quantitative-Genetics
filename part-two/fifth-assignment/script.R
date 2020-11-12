@@ -29,17 +29,17 @@ browseURL("http://www.researchgate.net/publication/256520299_Raeymaekers_et_al-E
 
 # set your working directory to the destination where you downloaded the file, for instance:
 
-setwd("D:/Users/Joost.Raeymaekers/Downloads")
+setwd("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/fifth-assignment")
 
 # import the data
 
-install.packages("readxl")
+# install.packages("readxl")
 library(readxl)
-?read_excel
+# ?read_excel
 
-genotypes0 <- read_excel("6 - Conservation Genetics - Riverscape Genetics - Raeymaekers et al-EVA-2008.xlsx", sheet = "genotypes Demer 2002") # Specify sheet with a number or name
-genotypes0 <- read_excel("Raeymaekers et al-EVA-2008.xlsx", sheet = "genotypes Demer 2002") # Specify sheet with a number or name
-genotypes0 # inspect the data. 
+# genotypes0 <- read_excel("6 - Conservation Genetics - Riverscape Genetics - Raeymaekers et al-EVA-2008.xlsx", sheet = "genotypes Demer 2002") # Specify sheet with a number or name
+genotypes0 <- read_excel("data.xlsx", sheet="genotypes Demer 2002") # Specify sheet with a number or name
+genotypes0 # inspect the data.
 
 # Note that some genotypes have 5 digits and some have 6 digit format! This is because excel stores genotypes
 # such as 096096 (i.e. categorically) as 96096 (i.e. numerically). Furthermore, note that missing values are marked as 0
@@ -51,20 +51,19 @@ genotypes <- genotypes0 # make a copy of the genotypes object
 
 converse <- function(x) {
   x0 <- as.vector(x)
-  x0[x %in% c(1:99999)] <- paste0(0,x0[x %in% c(1:99999)],sep="")
+  x0[x %in% c(1:99999)] <- paste0(0, x0[x %in% c(1:99999)], sep="")
   x0[x %in% c(0)] <- "000000"
   x0
 }
 
-genotypes[,loci] <- apply(genotypes[,loci],2,converse)
+genotypes[,loci] <- apply(genotypes[,loci], 2, converse)
 
 View(genotypes0) # old data
 View(genotypes) # converted data. Was it successful?
 
 # Now we can convert the data also to a genind object so we can analyse the data with adegenet:
-
 library(adegenet)
-stickle <- df2genind(genotypes[,loci],sep=NULL,ncode=3,NA.char="000",ind.names=genotypes$ID,pop=genotypes$Population)
+stickle <- df2genind(genotypes[,loci], sep=NULL, ncode=3, NA.char="000", ind.names=genotypes$ID, pop=genotypes$Population)
 
 summary(stickle)
 indNames(stickle)
@@ -75,23 +74,26 @@ alleles(stickle)
 # even starting from a random data format. We can now also convert it to the hierfstat format, 
 # for instance to calculate allelic richness:
 
-install.packages("devtools")
+# install.packages("devtools")
 library(devtools)
-install_github("jgx65/hierfstat")
+# install_github("jgx65/hierfstat")
 library("hierfstat")
-?fstat
+# ?fstat
 
-stickle3 <- hierfstat:::.genind2hierfstat(stickle)
+stickle3 <- hierfstat:::genind2hierfstat(stickle)
 AR <- allelic.richness(stickle3)
 meanAR <- colMeans(AR$Ar)
 meanAR
-
+typeof(meanAR)
+barplot(meanAR)
 # Finally, let's quantify pairwise fst for these 21 populations:
 
-matFst <- pairwise.fst(stickle,res.type="matrix")
+matFst <- pairwise.WCfst(stickle3)
 matFst 
 matFst.ordered <- matFst[c(6:21,1:5),c(6:21,1:5)] # same, but arranged in a more logical order (downstream to upstream)
 matFst.ordered
+plot(matFst.ordered)
+typeof(matFst.ordered)
 
 # Note: you can also go back to the script "3-Conservation Genetics - stickle.R" and obtain the entire VARFINAL object
 # with "stickle" and "stickle3" as the input (see +/- line 330 onwards) - for those that want to repeat the first class. 
@@ -106,10 +108,10 @@ matFst.ordered
 # However, the excel sheets also contain geographical information which we want to use to see which geographic features drive
 # genetic variation (allelic richness) and genetic differentiation (pairwise fst). 
 
-geogenvar0 <- read_excel("Raeymaekers et al-EVA-2008.xlsx", sheet = "geo & genvar")
-geogendist0 <- read_excel("Raeymaekers et al-EVA-2008.xlsx", sheet = "geo & gendist")
-geogenvar0 <- read_excel("6 - Conservation Genetics - Riverscape Genetics - Raeymaekers et al-EVA-2008.xlsx", sheet = "geo & genvar") # Specify sheet with a number or name
-geogendist0 <- read_excel("6 - Conservation Genetics - Riverscape Genetics - Raeymaekers et al-EVA-2008.xlsx", sheet = "geo & gendist") # Specify sheet with a number or name
+geogenvar0 <- read_excel("data.xlsx", sheet = "geo & genvar")
+geogendist0 <- read_excel("data.xlsx", sheet = "geo & gendist")
+# geogenvar0 <- read_excel("6 - Conservation Genetics - Riverscape Genetics - Raeymaekers et al-EVA-2008.xlsx", sheet = "geo & genvar") # Specify sheet with a number or name
+# geogendist0 <- read_excel("6 - Conservation Genetics - Riverscape Genetics - Raeymaekers et al-EVA-2008.xlsx", sheet = "geo & gendist") # Specify sheet with a number or name
 
 geogenvar <- data.frame(geogenvar0)
 geogendist <- data.frame(geogendist0)
@@ -122,6 +124,7 @@ geogendist <- data.frame(geogendist0)
 geogenvar
 colnames(geogenvar)
 geogenvar[,c("population","AR")] # allelic richness (AR) for each population
+# barplot(geogenvar[,c("AR")])
 
 # 2) genetic differentiation and pairwise geographical features:
 
@@ -132,7 +135,7 @@ colnames(geogendist)
 
 # pairwise genetic differentiation (fst) for each population pair:
 
-geogendist[,"fst"] 
+geogendist[,"fst"]
 
 # Note that with 21 (n) populations there are 210 possible population pairs (n*(n-1)/2):
 
@@ -182,7 +185,7 @@ cor(geogenvar[,c(6,9,10)]) # This shows the correlation matrix between the X var
 cor.test(geogenvar$log10.upstream.distance,geogenvar$log10.habitat.width) # This function also calculates the correlation, and tests if it is significantly different from zero
 rcorr(as.matrix(geogenvar[,c(6,9,10)])) # This function gives the correlation matrix (upper output) as well as the P-values (lower output)
 
-# !!! Check if the results of the rcorr funcation are the same as in Table 4A in the publication.
+# !!! Check if the results of the rcorr function are the same as in Table 4A in the publication.
 # Note that if you use rcorr (library Hmisc) then you don't need cor and cor.test (library stats)
 # What do you conclude based on the plots and the statistics? Do you think we have a problem of multicolinearity here? 
 
@@ -361,19 +364,16 @@ Anova(lm1)
 # As explained, here we work with pairwise distance matrices, but we can follow exactly the same reasoning as for allellic richness:
 
 lm1 <- lm(fst~all_barriers + distance + log10.habitat.width. + log10.upstream.distance., data=geogendist)
-
 lm2 <- lm(fst~all_barriers + distance + log10.habitat.width., data=geogendist)
 lm3 <- lm(fst~all_barriers + distance + log10.upstream.distance., data=geogendist)
 lm4 <- lm(fst~all_barriers + log10.habitat.width. + log10.upstream.distance., data=geogendist)
 lm5 <- lm(fst~distance + log10.habitat.width. + log10.upstream.distance., data=geogendist)
-
 lm6 <- lm(fst~all_barriers + distance, data=geogendist)
 lm7 <- lm(fst~all_barriers + log10.habitat.width., data=geogendist)
 lm8 <- lm(fst~all_barriers + log10.upstream.distance., data=geogendist)
 lm9 <- lm(fst~distance + log10.habitat.width., data=geogendist)
 lm10 <- lm(fst~distance + log10.upstream.distance., data=geogendist)
 lm11 <- lm(fst~log10.habitat.width. + log10.upstream.distance., data=geogendist)
-
 lm12 <- lm(fst~all_barriers, data=geogendist)
 lm13 <- lm(fst~distance, data=geogendist)
 lm14 <- lm(fst~log10.upstream.distance., data=geogendist)
@@ -481,5 +481,5 @@ browseURL("http://www.researchgate.net/publication/227993944_Guidelines_for_rest
 
 # University of Leuven
 # Laboratory of Biodiversity and Evolutionary Genomics
-# Ch. de Bériotstraat 32, B-3000 Leuven, Belgium
+# Ch. de B?riotstraat 32, B-3000 Leuven, Belgium
 # Phone: +32 (0) 16 37 36 49
