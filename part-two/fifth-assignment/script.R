@@ -58,8 +58,8 @@ converse <- function(x) {
 
 genotypes[,loci] <- apply(genotypes[,loci], 2, converse)
 
-View(genotypes0) # old data
-View(genotypes) # converted data. Was it successful?
+# View(genotypes0) # old data
+# View(genotypes) # converted data. Was it successful?
 
 # Now we can convert the data also to a genind object so we can analyse the data with adegenet:
 library(adegenet)
@@ -85,15 +85,17 @@ AR <- allelic.richness(stickle3)
 meanAR <- colMeans(AR$Ar)
 meanAR
 typeof(meanAR)
+pdf("meanAR.pdf", width=12, height=5)
 barplot(meanAR)
-# Finally, let's quantify pairwise fst for these 21 populations:
+dev.off()
 
+# Finally, let's quantify pairwise fst for these 21 populations:
 matFst <- pairwise.WCfst(stickle3)
 matFst 
 matFst.ordered <- matFst[c(6:21,1:5),c(6:21,1:5)] # same, but arranged in a more logical order (downstream to upstream)
 matFst.ordered
-plot(matFst.ordered)
-typeof(matFst.ordered)
+# plot(matFst.ordered)
+# typeof(matFst.ordered)
 
 # Note: you can also go back to the script "3-Conservation Genetics - stickle.R" and obtain the entire VARFINAL object
 # with "stickle" and "stickle3" as the input (see +/- line 330 onwards) - for those that want to repeat the first class. 
@@ -124,7 +126,7 @@ geogendist <- data.frame(geogendist0)
 geogenvar
 colnames(geogenvar)
 geogenvar[,c("population","AR")] # allelic richness (AR) for each population
-# barplot(geogenvar[,c("AR")])
+barplot(geogenvar[,c("AR")])
 
 # 2) genetic differentiation and pairwise geographical features:
 
@@ -182,7 +184,7 @@ pairs(geogenvar[,c(6,9,10)]) # This plots all pairwise combinations for the thre
 # Next, lets have a look at the correlation matrix between all X values.
 
 cor(geogenvar[,c(6,9,10)]) # This shows the correlation matrix between the X variables (Pearson correlation)
-cor.test(geogenvar$log10.upstream.distance,geogenvar$log10.habitat.width) # This function also calculates the correlation, and tests if it is significantly different from zero
+cor.test(geogenvar$log10.upstream.distance, geogenvar$log10.habitat.width) # This function also calculates the correlation, and tests if it is significantly different from zero
 rcorr(as.matrix(geogenvar[,c(6,9,10)])) # This function gives the correlation matrix (upper output) as well as the P-values (lower output)
 
 # !!! Check if the results of the rcorr function are the same as in Table 4A in the publication.
