@@ -85,7 +85,7 @@ AR <- allelic.richness(stickle3)
 meanAR <- colMeans(AR$Ar)
 meanAR
 typeof(meanAR)
-pdf("meanAR.pdf", width=12, height=5)
+pdf("meanAR.pdf", width=14, height=5)
 barplot(meanAR)
 dev.off()
 
@@ -126,8 +126,9 @@ geogendist <- data.frame(geogendist0)
 geogenvar
 colnames(geogenvar)
 geogenvar[,c("population","AR")] # allelic richness (AR) for each population
+# pdf("ar-hist.pdf", width=15, height=5)
 barplot(geogenvar[,c("AR")])
-
+# dev.off()
 # 2) genetic differentiation and pairwise geographical features:
 
 geogendist
@@ -355,8 +356,10 @@ lm7 <- lm(AR~log10.upstream.distance., data=geogenvar)
 
 # The results for the "full model", shown in Table 3A of the publication, can be generated as follows:
 
+summary(lm3)
 library(car)
 Anova(lm1)
+?Anova
 
 # The P-values of this model indicate that barriers are the only significant predictor of allelic richness!
 
@@ -399,6 +402,7 @@ lm15 <- lm(fst~log10.habitat.width., data=geogendist)
 2*2 + 21*log(anova(lm14)[2,2]/21) + 2*2*(2+1)/(21-2-1)
 2*2 + 21*log(anova(lm15)[2,2]/21) + 2*2*(2+1)/(21-2-1)
 
+summary(lm12)
 # model 12 (including only barriers!!!) is best, and model 7 is fine as well.
 # So barriers alone are sufficient to explain variation in pairwise fst!
 
@@ -421,7 +425,7 @@ predicted.fst <- predict(lm1)
 
 # Here we use lm1 rather than lm12, because although barriers alone sufficiently explains fst, adding the three
 # other geographical features will allow us to make more precise predictions. We are now no longer interested
-# in finding the variables with the strongest effects, but in makeing good predictions.
+# in finding the variables with the strongest effects, but in making good predictions.
 
 # Some students questioned the use of "pairwise habitat width" and "pairwise upstream distance" in these models,
 # because they felt it is kind of meaningless information. For instance, two populations with an intermediate
@@ -436,6 +440,7 @@ predicted.fst <- predict(lm1)
 # similar (for instance the position of the four satellite populations), 
 # but figure A is ONLY based on genotypes, and figure B is ONLY based on geographical information.
 
+pdf("predict.pdf", width=16, height=8)
 par(mfrow=c(1,2))
 x <- isoMDS(column.to.matrix(geogendist$fst),y = cmdscale(column.to.matrix(geogendist$fst), 2), k = 2)
 rownames(x$points) <- geogenvar$population
@@ -448,10 +453,10 @@ rownames(x$points) <- geogenvar$population
 ordiplot(x,type="p")
 title("Predicted pairwise Fst among 21 populations")
 text(x$points[,1],x$points[,2],dimnames(x$points)[[1]], cex=1)
-
+dev.off()
 # For the correlation coefficient in figure 3B, use the following script:
 
-cor(geogendist$fst,predicted.fst)^2 
+cor(geogendist$fst, predicted.fst)^2 
 
 # This R-squared value reflects the proportion of variation in pairwise fst which we can explain by geography!
 # This is relatively high - don't forget that patterns in natural populations (e.g. ecology) are usually harder to predict.

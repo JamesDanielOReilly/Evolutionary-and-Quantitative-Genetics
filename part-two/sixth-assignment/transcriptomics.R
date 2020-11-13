@@ -23,9 +23,17 @@
 # install DESeq2
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-BiocManager::install("DESeq2")
+# BiocManager::install("DESeq2")
+BiocManager::install('EnhancedVolcano')
+install.packages('pheatmap')
+
+library(DESeq2)
+library(ggplot2)
+library(EnhancedVolcano)
+library(pheatmap)
 
 # read count matrix and metadata
+setwd("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/sixth-assignment")
 count_data <- read.table("count_data_exercise.txt", row.names = 1, header = T)
 str(count_data)
 design <- read.table("design.txt", row.names = 1, header = T)
@@ -100,7 +108,6 @@ plotMA(res_N24_vsN20, ylim=c(-2,2)) # do the same for the other contrasts
 
 # Make a volcano plot
 BiocManager::install('EnhancedVolcano')
-library(EnhancedVolcano)
 
 plot.new()
 EnhancedVolcano(res_N24_vsN20,
@@ -115,7 +122,6 @@ EnhancedVolcano(res_N24_vsN20,
 # Make a heatmap with all DEGs
 
 install.packages("pheatmap")
-library("pheatmap")
 
 # Combine all unique differentially expressed genes (DEGs) for all contrasts 
 # (with unique = each DEG transcript ID occuring only once)
