@@ -23,7 +23,8 @@
 # install DESeq2
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-# BiocManager::install("DESeq2")
+
+BiocManager::install("DESeq2")
 BiocManager::install('EnhancedVolcano')
 install.packages('pheatmap')
 
@@ -33,7 +34,8 @@ library(EnhancedVolcano)
 library(pheatmap)
 
 # read count matrix and metadata
-setwd("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/sixth-assignment")
+setwd("/home/james/Documents/KULeuven/Bioinformatics/second_year/Evolutionary-and-Quantitative-Genetics/part-two/sixth-assignment")
+# setwd("/home/james/Documents/leuven/second-year/Evolutionary-and-Quantitative-Genetics/part-two/sixth-assignment")
 count_data <- read.table("count_data_exercise.txt", row.names = 1, header = T)
 str(count_data)
 design <- read.table("design.txt", row.names = 1, header = T)
@@ -105,10 +107,11 @@ sig_S20_vsN20 <- res_S20_vsN20[ which(res_S20_vsN20$padj < 0.05 ), ]
 
 plot.new()
 plotMA(res_N24_vsN20, ylim=c(-2,2)) # do the same for the other contrasts
+plotMA(res_S24_vsS20, ylim=c(-2,2)) # do the same for the other contrasts
+plotMA(res_S24_vsN24, ylim=c(-2,2)) # do the same for the other contrasts
+plotMA(res_S20_vsN20, ylim=c(-2,2)) # do the same for the other contrasts
 
 # Make a volcano plot
-BiocManager::install('EnhancedVolcano')
-
 plot.new()
 EnhancedVolcano(res_N24_vsN20,
                 lab = rownames(res_N24_vsN20),
@@ -118,11 +121,36 @@ EnhancedVolcano(res_N24_vsN20,
 
 # do the same for the other contrasts
 
+plot.new()
+EnhancedVolcano(res_N24_vsN20,
+                lab = rownames(res_N24_vsN20),
+                x = 'log2FoldChange',
+                y = 'padj',
+                labSize = 1.5)
+
+plot.new()
+EnhancedVolcano(res_S24_vsS20,
+                lab = rownames(res_S24_vsS20),
+                x = 'log2FoldChange',
+                y = 'padj',
+                labSize = 1.5)
+
+plot.new()
+EnhancedVolcano(res_S24_vsN24,
+                lab = rownames(res_S24_vsN24),
+                x = 'log2FoldChange',
+                y = 'padj',
+                labSize = 1.5)
+
+plot.new()
+EnhancedVolcano(res_S20_vsN20,
+                lab = rownames(res_S20_vsN20),
+                x = 'log2FoldChange',
+                y = 'padj',
+                labSize = 1.5)
+
 
 # Make a heatmap with all DEGs
-
-install.packages("pheatmap")
-
 # Combine all unique differentially expressed genes (DEGs) for all contrasts 
 # (with unique = each DEG transcript ID occuring only once)
 DEGs_N24_vsN20=rownames(sig_N24_vsN20)
@@ -145,11 +173,12 @@ pheatmap(log2.norm.counts, cluster_rows=FALSE, show_rownames=FALSE,
 # and one where you combine the DEGs for both latitude contrasts
 
 # extract the names of the DEGs like this (do also for other contrasts)
-write.table(DEGs_N24_vsN20,file="DEGs_N24_vsN20.txt",row.names=FALSE,col.names=FALSE, sep="\t", quote = FALSE)
+write.table(DEGs_N24_vsN20, file="DEGs_N24_vs_N20.txt", row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
+write.table(DEGs_S24_vsS20, file="DEGs_S24_vs_S20.txt", row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
+write.table(DEGs_S24_vsN24, file="DEGs_S24_vs_N24.txt", row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
+write.table(DEGs_S20_vsN20, file="DEGs_S20_vs_N20.txt", row.names=FALSE, col.names=FALSE, sep="\t", quote = FALSE)
 
 https://bioinfogp.cnb.csic.es/tools/venny/
-
-
 
 # It can also be useful to examine the counts of reads for a single gene across the groups.'
 # A simple function for making this plot is plotCounts, which normalizes counts by sequencing depth and adds a pseudocount of 1/2 to allow for log scale plotting
