@@ -1,0 +1,5 @@
+setwd("Documents/KULeuven/Bioinformatics/second_year/Evolutionary-and-Quantitative-Genetics/quantitative-genetics/third-assignment/data/")
+x<-read.table("gwa_sampleqc.frq", header=T)
+xlabels=c("0.0001","0.001","0.01","0.1","1")
+hist(x$MAF, axes=T, xlim=c(0, 1), col="RED", ylab="", xlab="Minor Allele Frequency", main="Distribution of MAF")
+abline(v=0.01, lty=2)
