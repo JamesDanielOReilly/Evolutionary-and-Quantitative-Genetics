@@ -78,14 +78,10 @@ manhattan(results, colors=c("#008B8B","#A9A9A9"), pch=20)
 # dev.off()
 
 # make QQ plot
-data <- read.table("gwa_clean.assoc.logistic", header = TRUE)
+data <- read.table("gwa_clean.assoc.logistic", header=TRUE)
 # jpeg("pvalue.qq.plot.jpg")
 obs <- -log10(sort(data$P))
-exp <- -log10( c(1:length(obs))/(length(obs) + 1))
-plot(exp, obs, ylab = "Observed (−logP)", xlab = "Expected(−logP)", ylim = c(0,20), xlim = c(0,7))
-lines(c(0,7), c(0,7), col = 1, lwd = 2)
+exp <- -log10(c(1:length(obs))/(length(obs) + 1))
+plot(exp, obs, ylab="Observed (−logP)", xlab="Expected(−logP)", ylim=c(0,20), xlim=c(0,7))
+lines(c(0,7), c(0,7), col=1, lwd=2)
 # dev.off()
-
-
-
-

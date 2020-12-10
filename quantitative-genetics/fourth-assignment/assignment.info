@@ -1,0 +1,208 @@
+##############################################################################
+## Author: Isabelle Cleynen                    							    ##
+## project: script PLINK GWAS practical (association, stratification)       ##
+## last date modified: 03/12/2020             							    ##
+##############################################################################
+
+## TIP: open this file using Notepad++ (or another source code editor of choice). Change language to 'shell' to see colours differentiating remarks from code for example, or indicating potential mistakes in your code. If necessary, enable 'word wrap' under the 'View' button (to avoid having to scroll from left to right all the time).
+
+## !!! Make sure to go through each step in this info file, and read through carefully. 
+
+#####################################
+######## GENERAL INFORMATION ########
+#####################################
+
+
+## In this practical, you will run through some of the basic steps in performing an association analysis in Plink, as well as evaluate population structure. You will use a “clean” dataset which is available on Toledo (gwa_clean.bed, gwa_clean.bim, gwa_clean.fam).
+
+## We will test for association under an additive model in a logistic regression framework (the most widely used model), and will also investigate the impact of covariates on the association signal.
+## We will also evaluate population structure. We will identify the individuals of divergent ancestry - if any - by merging our data with genotypes from HapMap Phase III, and exclude outlying individuals. Then we will account for more fine-scale population substructure.
+
+## You can work in your same data folder as created for Assignment 3. 
+## download the data files ('GWA_clean.bed', 'GWA_clean.bim', 'GWA_clean.fam'), the info script, and the population stratification files from Toledo and save to your working directory.
+## remove the (1) or (2) or (1)(1) ... from the file names if necessary.
+
+## !!! An assignment file ("Assignment 4 - GWAS association.docx") is also available on Toledo !!! The assignment file includes some specific questions related to the commands used (these questions are also refered to in this info file). In addition, there is also a more general, open question. The deadline of the task is indicated on the assignment file.  
+
+## note: SNPs = markers = variants (these terms are used interchangeably throughout the document)
+
+
+
+######## Part 1: testing for association under an additive model ########
+#########################################################################
+
+## As seen in class, the most flexible approach to analyse a dichotomous (case-control) outcome is within a logistic regression framework. This framework typically assumes an additive effect on the odds ratio of the minor allele at a SNP. 
+
+# Figure out from the Plink website how to run this logistic regression analysis in Plink. Make sure to also include the 95% CI for your model parameters! Run this command in Plink, and add the used command to your answers document (question 1).  
+
+# Have a look at the format of the output file:
+head filename # with filename being the output file of the command used
+
+# The output file has one row per SNP, and provides the SNP identifier and position, the effect allele (A1, which by default is the minor allele), the test performed (here ADD for additive), the number of genotypes called at the SNP (NMISS), the odds ratio (OR), the standard error of the log-odds ratio (SE), the lower and upper 95% confidence limits (L95 and U95; when this option is indicated in the command), the association test statistic (STAT), and the p-value for association (P). 
+
+
+## Visualize your results !! ##
+###############################
+
+## As seen in class, visualization of your data helps you to get an overview of the results, and to see if there would be any systematic bias. You will use Manhattan and QQ plots to visualize your results, and calculate the genomic control inflation factor.
+ 
+## First plot a summary of the association statistics from the additive model in a Manhattan plot. In a Manhattan plot, each point represents a SNP, plotted according to the physical position on the x-axis and the -log10 p-value for association from the additive model on the y-axis. We will indicate SNPs reaching genome-wide significance (p<5x10-8) as above the red line. SNPs reaching suggestive (p<1x10-05) significance will be above the blue line (or whatever colours you prefer).
+# You can use the provided 'manhattan.R' script, or have a look at https://cran.r-project.org/web/packages/qqman/) where an alternative is provided for making Manhattan plots in R. Or you can use your own favorite program.
+
+
+## Also make a QQ plot based on –log10 P values from the additive association test. In R, you could use something like this (feel free to use your own code or favorite tool): 
+data <- read.table("yourfilename", header = TRUE)
+jpeg("pvalue.qq.plot.jpg")
+obs <- −log10(sort(data$P))
+exp <- −log10( c(1:length(obs)) /(length(obs) + 1))
+plot(exp, obs, ylab = "Observed (−logP)", xlab = "Expected(−logP)", ylim = c(0,20), xlim = c(0,7))
+lines(c(0,7), c(0,7), col = 1, lwd = 2)
+dev.off()
+
+
+## Calculate the genomic control inflation factor λ (using Plink). Add the command you used and the obtained GC inflation factor to your answers document (question 2). TIP: if you do not find how to do this directly on the Plink website, use google ;-)
+
+# You will probably notice that the plots look quite 'clean' and nice already. In part 3 of this tutorial we will in either case also check if there are any population outliers. 
+
+
+######## Part 2: Accounting for confounders as covariates in a logistic regression model ########
+#################################################################################################
+
+## A primary advantage of the logistic regression model is that it is straightforward to account for potential confounders (such as sex or age). These can be added as covariates in the logistic regression model. 
+
+## To take account of potential confounders not present in the *.ped or *.fam file, you need an additional datafile containing the values for all covariates for each individual. The file 'gwa_clean.covar' contains additional confounders that we might wish to take account of in the analysis. Check the format and content of this file:
+head gwa_clean.covar
+
+# The file contains one row per individual, each with four columns. The first two columns give the FID and IID as used in the *.fam file. The third column provides the SEX of each individual (cfr *.fam or *.ped file), and the last column the AGE. 
+
+## Rerun your association analysis, but now accounting for age and sex as confounders. Add the command you used to your answers document (question 3).
+
+## Have a look at the format of the output file:
+head filename # with filename being the output file of the command used
+
+# The output file now has three rows per SNP, the first providing the evidence of association of the SNP with case-control status under an additive model (ADD), the second providing the evidence of association of age with case-control status (AGE), and the third providing the evidence of association of sex with case-control status (SEX). 
+# !! Note that if you only want the association results for the SNPs (ADD) in your output file, you can indicate this in your code by adding --hide-covar. The output file then only shows the ADD lines, not the SEX or AGE stats. 
+
+## What Plink command would you use if you would want to use AGE as an outcome trait instead of the affection status (case-control)? Add the full Plink command to your answers document (question 4).
+
+
+######## Part 3. Identification of individuals of divergent ancestry (european versus asian, african...) ########
+#################################################################################################################
+
+## This step is conducted by merging our dataset with the HapMap Phase III (HapMap3) data from four ethnic populations (cfr slides class).
+## The alleles at each marker must be aligned to the same DNA strand (forward or reverse strand) to allow the study data to merge correctly (see below). Because not all SNPs are required for this analysis, A→T and C→G SNPs, which are more difficult to align, can be omitted.
+ 
+# We will first exclude duplicate SNPs from the data to avoid merge errors (merging of files will not be possible because of these errors). The list of duplicate SNPs is provided on Toledo.
+./plink --bfile gwa_clean --exclude duplicated_snps.snplist --make-bed --out gwa_clean_dupdel #exclude all duplicated snps from your dataset
+
+# To create a new BED file, excluding from the GWA data those SNPs that do not feature in the genotype data of the four original HapMap3 populations and the A→T and C→G SNPs, type:
+./plink --bfile gwa_clean_dupdel --extract hapmap3r2_CEU.CHB.JPT.YRI.no-at-cg-snps.txt --make-bed --out gwa_hapmap
+
+
+## Merge the gwa_hapmap files with the HapMap data and extract the pruned SNP set (i.e. only keep LD uncorrelated SNPs):
+########################################################################################################################
+./plink --bfile GWA_clean_dupdel --indep-pairwise 50 5 0.2 --out GWA_clean_dupdel #this will give you the set of uncorrelated SNPs to include
+./plink --bfile gwa_hapmap --bmerge hapmap3r2_hg19.bed hapmap3r2_hg19.bim hapmap3r2_hg19.fam --extract GWA_clean_dupdel.prune.in --make-bed --out gwa_hapmap.pruned
+
+# you will notice an error when performing the above command. This is because of differential alignment of SNPs (cfr as mentioned above). One of the ouputfiles of the previous command is the list of SNPs with alignment errors (G/T instead of C/A for example). This list you can now use to flip to the same strand:
+./plink --bfile gwa_hapmap --flip gwa_hapmap.pruned-merge.missnp --make-bed --out gwa_hapmap.flipped
+
+# rerun the merge command:
+./plink --bfile gwa_hapmap.flipped --bmerge hapmap3r2_hg19.bed hapmap3r2_hg19.bim hapmap3r2_hg19.fam --extract GWA_clean_dupdel.prune.in --make-bed --out gwa_hapmap.pruned
+# warnings can be ignored
+
+ 
+## Conduct a PCA on the merged data by typing
+#############################################
+./plink --bfile gwa_hapmap.pruned --pca --out gwa_hapmap.pruned.pca
+
+# check the output files
+head gwa_hapmap.pruned.pca.eigenval 
+head gwa_hapmap.pruned.pca.eigenvec # file with first two columns being the FID and IID of the individuals (!including the HapMap individuals), and the remaining columns being the first 20 PCs for each individual
+
+
+## A scatter diagram of the first two principal components (PCs) of all individuals can be created using R (again, feel free to use your own code/favorite tool instead): 
+dat <- read.table("gwa_hapmap.pruned.pca.eigenvec",h=F)
+colnames(dat)[1] <- "FID" #change column header of first column to FID 
+colnames(dat)[2] <- "IID" #change column header of second column to IID 
+# add a column in the dat file indicating who is CEU, CHB, JPT, YRI; and who is from your own gwa dataset. This way we can colour the samples in the plot according to their etnicity/dataset. This information is present in the fam file of the merged dataset, in which the last column indicates whether the individual is a case (=='2'), control (=='1'), or which HapMap population (=='3','4','5',or '6'). 
+pop <- read.table("gwa_hapmap.pruned.fam", header = F)
+colnames(pop)[1] <- "FID"  
+colnames(pop)[2] <- "IID"
+colnames(pop)[6] <- "group"
+pops <- subset(pop, select=c(1,2,6))
+head(pops)
+# merge dat and pops
+data <- merge(dat, pops, by="IID", all=FALSE)
+names(data)
+head(data)
+dim(data)
+str(data)
+data$group <- as.factor(data$group)
+cont <- which(data$group=="1")
+case <- which(data$group=="2")
+CEU <- which(data$group=="3") #note that this indicates that those individuals with '3' in phenotype column are the CEU (european population) individuals
+CHB <- which(data$group=="4") 
+JPT <- which(data$group=="5")
+YRI <- which(data$group=="6")
+pdf("pca-ancestry-plot.pdf")
+plot(0,0,pch="",xlim=c(-0.1,0.05),ylim=c(-0.1,0.1),xlab="principal component 1", ylab="principal component 2")
+points(data$V3[JPT],data$V4[JPT],pch=20,col="PURPLE")
+points(data$V3[CHB],data$V4[CHB],pch=20,col="PURPLE")
+points(data$V3[YRI],data$V4[YRI],pch=20,col="GREEN")
+points(data$V3[CEU],data$V4[CEU],pch=20,col="RED")
+par(cex=0.5)
+points(data$V3[cont],data$V4[cont],pch="+",col="BLACK")
+points(data$V3[case],data$V4[case],pch="+",col="BLACK")
+abline(h=0.072,col="gray32",lty=2)
+dev.off()
+
+# In this scatter plot, each point corresponds to an individual. 
+# Based on the scatter diagram, and potentially the *.eigenvec file, decide which PC1/PC2 cut-off you would use, such that only individuals who match the given ancestral population (european) are retained. 
+
+## now exclude all population outliers, using the cut-offs you have chosen. You can do this by filtering on the chosen cut-off in the *.eigenvec file, and copying the FID and IID of the excluded individuals to a file called ‘fail-ancestry-QC.txt’. This file can be used to exclude these individuals from your analysis using:
+./plink --bfile gwa_clean_dupdel --remove fail-ancestry-QC.txt --make-bed --out gwa_exclpop
+
+
+######## Retest for association ######
+######################################
+
+## In a real-life setting, we would now first redo the association analysis, Manhattan plot, QQ plot and genomic inflation factor calculation on the dataset in which the population outliers were excluded to check if cleaner/better results are obtained. We will here immediately proceed to PCA for finer scale structure (next step).
+
+
+######## PCA for finer scale structure  ######
+##############################################
+
+## The next step is to account for finer scale population structure (within european ethnicity). For this, we first need to run a PCA on the dataset excluding the population outliers, and without the HapMap samples
+./plink --bfile gwa_exclpop --extract GWA_clean_dupdel.prune.in --pca --out gwa_exclpop.pca
+
+## Repeat the association analysis, now including the first 10 PCs as covariates. Add the used command to your answers document (question 5). Also make a new Manhattan plot, QQ plot, and re-calculate the lambda GC factor. Also remake the scatter plot (plotting the first two PCs). Just for your understanding, compare your results with the results and plots from part 2: did anything change? are they much different? 
+# !! Consider the association results from this analysis as your final analysis results (to be used also for part 4 below, and question 8)
+
+
+######## Part 4: Exploring the results using web-based tools ########
+#####################################################################
+
+## Finally, we will look up some further information about our significant hit(s). Below is a non-exhaustive (!!) list of tools that can be used to find some more information about your hits.
+
+## 1. NCBI dbSNP. 
+#################
+## On http://www.ncbi.nlm.nih.gov/SNP/ you can type in your most significant SNP for each identified locus to for example find: 
+	# Which gene does the SNP belong to? 
+	# What is the MAF of the SNP according to GnomAD (the Genome Aggregation Database, which aggregates exome and genome sequencing data from large-scale sequencing projects)? 
+	# What is the location of the SNP according to dbSNP? (also see question 6 on the assignment sheet)
+	# What type of variant is the SNP (functional annotation)? 
+	# ...
+
+
+## 2. GWAS Catalog.
+###################
+# You can also check the GWAS catalogue to for example find out what is known about previous disease associations of your SNPs/genes. Go to https://www.ebi.ac.uk/gwas/ and type in the rsid of the top SNP(s) and/or the gene(s) in which they are located. 
+
+
+## 3. LDlink.
+#############
+# Go to http://analysistools.nci.nih.gov/LDlink/ . Here you can for example check for LD between SNPs. Remember that it is important to select the correct population in this context! 
+# Check the degree of LD between the most significant SNP and the second most significantly associated SNP. Add both SNP IDs; and the D' and r² value between both SNPs in your answers document. Can you speculate on why the D' and r² values are so different, and what it means (question 7)? 
+# From the degree of LD between these two variants, what can you conclude in relation to the associated region these SNPs belong to? Make sure to incorporate this interpretation in your results paragraph for question 8.
+
