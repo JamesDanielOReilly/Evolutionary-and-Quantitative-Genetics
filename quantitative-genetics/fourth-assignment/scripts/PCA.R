@@ -30,18 +30,28 @@ JPT <- which(data$group=="5")
 YRI <- which(data$group=="6")
 #pdf("pca-ancestry-plot.pdf")
 plot(0, 0, pch="", xlim=c(-0.1,0.05), ylim=c(-0.1,0.1), xlab="principal component 1", ylab="principal component 2")
-points(data$V3[JPT], data$V4[JPT], pch=20,col="PURPLE")
-points(data$V3[CHB], data$V4[CHB], pch=20,col="PURPLE")
-points(data$V3[YRI], data$V4[YRI], pch=20,col="GREEN")
-points(data$V3[CEU], data$V4[CEU], pch=20,col="RED")
+points(data$V3[JPT], data$V4[JPT], pch=20, col="PURPLE")
+points(data$V3[CHB], data$V4[CHB], pch=20, col="PURPLE")
+points(data$V3[YRI], data$V4[YRI], pch=20, col="GREEN")
+points(data$V3[CEU], data$V4[CEU], pch=20, col="RED")
 
 par(cex=0.5)
 points(data$V3[cont], data$V4[cont], pch="+", col="BLACK")
 points(data$V3[case], data$V4[case], pch="+", col="BLACK")
-abline(h=0.07,col="gray32",lty=2)
-abline(v=-0.004, col='green')
+# abline(h=0.072, col="gray32", lty=2)
+abline(v=0.004, col='blue', lty=2)
+legend("topright", 
+       legend = c("JPT/CHB", "YRI", "CEU", "CASE/CONTROL"), 
+       col = c("purple", "green", "red", "black"), 
+       pch = c(19, 19, 19, 3), 
+       bty = "n", 
+       pt.cex = 2, 
+       cex = 1.2, 
+       text.col = "black", 
+       horiz = F , 
+       inset = c(0.06, 0.06))
 
-View(data)
-fails <- data %>% filter(group %in% c(1,2), V3 < -0.004) %>% select(IID, FID.x)
-write.table(as.matrix(fails), file='fail-ancestry-QC.txt', sep="\t", col.names=F, row.names=F)
-View(fails)
+# View(data)
+fails <- data %>% filter(group %in% c(1,2), V3 < 0.004) %>% select(IID, FID.x)
+write.table(as.matrix(fails), file='fail-ancestry-QC.txt', col.names=F, row.names=F, quote=F)
+# View(fails)

@@ -69,8 +69,9 @@ manhattan <- function(dataframe, colors=c("gray10", "gray50"), ymax="max", limit
 }
 
 
-## to acually make the manhattan plot:
-results <- read.table("gwa_clean.assoc.logistic", header=T)
+## to actually make the manhattan plot:
+# results <- read.table("gwa_clean.assoc.logistic", header=T)
+results <- read.table("gwa_exclpop_pca10.assoc.logistic", header=T)
 head(subset(results, select=c(SNP, CHR, BP, P)))
 
 # jpeg(filename="gwa_manhattan.jpg")
